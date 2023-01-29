@@ -32,4 +32,9 @@ export type PointerType<T extends Type> = CompositeType<Pointer, T>;
 
 export type NullPointer = PointerType<Nothing>;
 
-export type Type = Mut<any> | PrimitiveType | Typename<any> | CompositeType<any, any> | Nothing;
+export type Type =
+  PrimitiveType
+  | Mut<any>
+  | Typename<any>
+  | CompositeType<any, any>
+  | Nothing;
