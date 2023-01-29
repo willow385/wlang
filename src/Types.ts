@@ -1,5 +1,3 @@
-import { type } from "os";
-
 export type Pointer = "ptr";
 
 export type Void = "void";
