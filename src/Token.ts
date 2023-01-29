@@ -1,3 +1,5 @@
+import { PrimitiveType } from "./Types";
+
 enum TokenType {
   ReservedWord,
 };
@@ -8,7 +10,8 @@ type ReservedWord =
   | "macro"
   | "extern"
   | "result"
-  | "varargs";
+  | "varargs"
+  | PrimitiveType;
 
 export interface Token {
   type: TokenType,
