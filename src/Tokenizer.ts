@@ -1,4 +1,4 @@
-import { NumberToken, Token, TokenType } from "./Token";
+import { NumberToken, punctuation, reservedWords, Token, TokenType } from "./Token";
 
 const isNumeric = (c: string | null) => c !== null && c >= '0' && c <= '9';
 
@@ -96,7 +96,6 @@ export class Tokenizer {
       throw new Error("Syntax error: comments have to start with either '//' or '/*'");
     }
   }
-  
 
   parseIdentifier(): Token {
     let result = "";
@@ -113,9 +112,91 @@ export class Tokenizer {
     };
   }
 
+  parseStringLiteral(): Token {
+    let result = "";
+    if (this.currentChar !== '"') {
+      throw new Error("Syntax error: string literal must start with a quote (\")");
+    }
+    this.advance();
+    while (this.currentChar !== '"' && this.currentChar !== null) {
+      result += this.currentChar;
+      this.advance();
+    }
+    if (this.currentChar === null) {
+      throw new Error("Syntax error: unterminated string literal");
+    }
+    this.advance();
+    return {
+      type: TokenType.StringLiteral,
+      value: result
+    };
+  }
+
+  parseCstringLiteral(): Token {
+    if (this.currentChar !== 'c') {
+      throw new Error("Syntax error: cstring literal must start with the prefix c");
+    }
+    this.advance();
+    const stringLiteral = this.parseStringLiteral();
+    return {
+      type: TokenType.CstringLiteral,
+      value: stringLiteral.value as string
+    };
+  }
+
+  parsePunctuation(): Token {
+    if (this.currentChar === ':') {
+      if (this.peekNext() === '-') {
+        this.advance();
+        this.advance();
+        return { type: TokenType.ColonDash, value: ":-" };
+      } else {
+        this.advance();
+        return { type: TokenType.Colon, value: ":" };
+      }
+    } else if (this.currentChar === TokenType.OpenParen) {
+      this.advance();
+      return { type: TokenType.OpenParen, value: "(" };
+    } else if (this.currentChar === TokenType.CloseParen) {
+      this.advance();
+      return { type: TokenType.CloseParen, value: ")" };
+    } else if (this.currentChar === TokenType.Minus) {
+      this.advance();
+      return { type: TokenType.Minus, value: "-" };
+    } else if (this.currentChar === '=') {
+      if (this.peekNext() === '>') {
+        this.advance();
+        this.advance();
+        return { type: TokenType.Arrow, value: "=>" };
+      } else {
+        this.advance();
+        return { type: TokenType.Equals, value: "=" };
+      }
+    } else if (this.currentChar === TokenType.OpenBrace) {
+      this.advance();
+      return { type: TokenType.OpenBrace, value: "{" };
+    } else if (this.currentChar === TokenType.CloseBrace) {
+      this.advance();
+      return { type: TokenType.CloseBrace, value: "}" };
+    } else if (this.currentChar === TokenType.Semicolon) {
+      this.advance();
+      return { type: TokenType.Semicolon, value: ";" };
+    } else if (this.currentChar === TokenType.Comma) {
+      this.advance();
+      return { type: TokenType.Comma, value: "," };
+    } else {
+      throw new Error(
+        `Syntax error: unexpected character '${this.currentChar}'\n`
+        + `on line ${this.currentLine+1}: ${this.sourceCode.split('\n')[this.currentLine]}`
+      );
+    }
+  }
+
   getNextToken(): Token {
     while (this.currentChar !== null) {
-      if (/^[a-zA-Z]$/.test(this.currentChar)) {
+      if (this.currentChar === TokenType.CstringSigil && this.peekNext() === '"') {
+        return this.parseCstringLiteral();
+      } else if (/^[a-zA-Z]$/.test(this.currentChar)) {
         return this.parseIdentifier();
       } else if (whitespace.includes(this.currentChar)) {
         this.skipWhitespace();
@@ -123,10 +204,14 @@ export class Tokenizer {
         return this.parseNumber();
       } else if (this.currentChar === '/' && ['/', '*'].includes(this.peekNext() ?? "")) {
         this.skipComment();
+      } else if (this.currentChar === '"') {
+        return this.parseStringLiteral();
+      } else if (punctuation.includes(this.currentChar)) {
+        return this.parsePunctuation();
       } else {
         throw new Error(
-          `Syntax error: unexpected character ${this.currentChar ?? "EOF"}`
-          + ` on line ${this.currentLine}`
+          `Syntax error: unexpected character '${this.currentChar ?? "EOF"}'\n`
+          + `on line ${this.currentLine+1}: \`${this.sourceCode.split('\n')[this.currentLine]}\``
         );
       }
     }
@@ -141,6 +226,10 @@ export class Tokenizer {
     do {
       result.push(this.getNextToken());
     } while (result.at(-1)!.type !== TokenType.End);
-    return result;
+    return result.map(token =>
+      token.type === TokenType.Identifier && reservedWords.includes(token.value) ?
+        { type: TokenType.ReservedWord, value: token.value }
+        : token
+    );
   }
 };

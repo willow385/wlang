@@ -1,4 +1,4 @@
-import { Nothing, PrimitiveType } from "./Types";
+import { Nothing, PrimitiveType, primitiveTypes } from "./Types";
 
 export enum TokenType {
   ReservedWord = "Reserved Word",
@@ -6,30 +6,40 @@ export enum TokenType {
   OpenParen = "(", CloseParen = ")",
   ColonDash = ":-",
   Colon = ":",
+  Minus = "-",
   Arrow = "=>",
   Equals = "=",
   OpenBrace = "{", CloseBrace = "}",
+  Comma = ",",
   CstringSigil = "c",
-  DoubleQuote = '"', SingleQuote = "'",
+  CstringLiteral = "C String Literal",
+  StringLiteral = "String Literal",
   Semicolon = ";",
+  CharLiteral = "Character Literal",
   WholeNumber = "Whole Number", Float = "Float",
   End = "End of File"
 };
 
 export type ReservedWord =
   "let"
+  | "mut"
   | "funct"
   | "macro"
   | "extern"
   | "result"
+  | "Typename"
   | "varargs"
   | PrimitiveType
   | Nothing;
 
-export interface IToken {
-  type: TokenType,
-  value: bigint | number | string
-};
+export const reservedWords = [
+  "let", "mut", "funct", "macro", "extern", "result", "Typename", "varargs",
+  ...primitiveTypes, "Nothing"
+];
+
+export const punctuation = [
+  "(", ")", ":-", ":", "-", "=>", "=", "{", "}", ",", ";"
+];
 
 export type ReservedWordToken = {
   type: TokenType.ReservedWord,
