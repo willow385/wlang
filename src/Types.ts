@@ -1,3 +1,5 @@
+import { type } from "os";
+
 export type Pointer = "ptr";
 
 export type Void = "void";
@@ -19,22 +21,38 @@ export const primitiveTypes: PrimitiveType[] = [
   "void", "ptr"
 ];
 
-export type Mut<T extends Type> = `mut ${T}`;
+export type Mut<T extends RuntimeType> = `mut ${T}`;
 
-export type Typename<T extends Type> = `Typename :- ${T}`;
+export type Typename = "Typename";
 
-export type CompositeType<
-  T extends Type,
-  R extends Type
-> = `${T} :- ${R}`;
+export type TypenameType<T extends RuntimeType> = `${Typename} :- ${T}`;
 
-export type PointerType<T extends Type> = CompositeType<Pointer, T>;
+export type PointerType<T extends RuntimeType> = `${Pointer} :- ${T}`
 
-export type NullPointer = PointerType<Nothing>;
+export type NullPointerType = PointerType<Nothing>;
 
-export type Type =
+export type NullablePointerType<T extends RuntimeType> = PointerType<T> | NullPointerType;
+
+type Parameter = ValueType | "varargs";
+
+type ParameterList<Types extends Parameter[]> =
+  Types extends [] ? ""
+  : Types extends [infer T extends Parameter] ? `${T}`
+  : Types extends [infer T extends ValueType, ...infer Next extends Parameter[]] ? `${T}, ${ParameterList<Next>}`
+  : never;
+
+export type FunctionType<Parameters extends Parameter[], ReturnType extends ValueType> =
+  `funct(${ParameterList<Parameters>}) => ${ReturnType}`;
+
+export type FunctionPointerType<Parameters extends Parameter[], ReturnType extends ValueType> =
+  PointerType<FunctionType<Parameters, ReturnType>>;
+
+export type ValueType =
   PrimitiveType
   | Mut<any>
-  | Typename<any>
-  | CompositeType<any, any>
+  | PointerType<any>
   | Nothing;
+
+export type ParametricType = TypenameType<any>;
+
+export type RuntimeType = ValueType | FunctionType<any, any>;
