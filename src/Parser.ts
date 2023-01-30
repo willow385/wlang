@@ -1,7 +1,31 @@
-import { Block, CstringLiteral, Expression, Extern, FloatLiteral, FunctionCall, FunctionDeclaration, IntLiteral, Module, ParamDeclaration, ResultStatement, Statement, StringLiteral } from "./Ast";
+import {
+  Block,
+  CstringLiteral,
+  Expression,
+  Extern,
+  FloatLiteral,
+  FunctionCall,
+  FunctionDeclaration,
+  IntLiteral,
+  Module,
+  ParamDeclaration,
+  ResultStatement,
+  Statement,
+  StringLiteral
+} from "./Ast";
 import { literalTypes, Token, TokenType } from "./Token";
 import { Tokenizer } from "./Tokenizer";
-import { FunctionType, Mut, NullablePointerType, Parameter, ParameterList, PointerType, PrimitiveType, primitiveTypes, ValueType } from "./Types";
+import {
+  FunctionType,
+  Mut,
+  NullablePointerType,
+  Parameter,
+  ParameterList,
+  PointerType,
+  PrimitiveType,
+  primitiveTypes,
+  ValueType
+} from "./Types";
 
 export class Parser {
   private tokenizer: Tokenizer;
