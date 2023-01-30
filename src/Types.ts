@@ -29,11 +29,11 @@ export type PointerType<T extends RuntimeType> = `${Pointer} :- ${T}`
 
 export type NullPointerType = PointerType<Nothing>;
 
-export type NullablePointerType<T extends RuntimeType> = PointerType<T> | NullPointerType;
+export type NullablePointerType<T extends RuntimeType> = `ptr? :- ${T}` | NullPointerType;
 
-type Parameter = ValueType | "varargs";
+export type Parameter = ValueType | "varargs";
 
-type ParameterList<Types extends Parameter[]> =
+export type ParameterList<Types extends Parameter[]> =
   Types extends [] ? ""
   : Types extends [infer T extends Parameter] ? `${T}`
   : Types extends [infer T extends ValueType, ...infer Next extends Parameter[]] ? `${T}, ${ParameterList<Next>}`
@@ -49,6 +49,7 @@ export type ValueType =
   PrimitiveType
   | Mut<any>
   | PointerType<any>
+  | NullablePointerType<any>
   | Nothing;
 
 export type ParametricType = TypenameType<any>;

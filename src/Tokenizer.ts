@@ -8,19 +8,23 @@ const isHexadecimal =
 const whitespace = [' ', '\t', '\n', '\r'];
 
 export class Tokenizer {
-  private sourceCode: string;
+  readonly sourceCode: string;
   private index: number;
   private currentChar: string | null;
-  private currentLine: number;
+  currentLineIndex: number;
 
   constructor(sourceCode: string) {
     this.sourceCode = sourceCode;
     this.index = 0;
-    this.currentLine = 0;
+    this.currentLineIndex = 0;
     this.currentChar = this.sourceCode[0];
   }
 
-  advance() {
+  getCurrentLine(): string {
+    return `on line ${this.currentLineIndex+1}: \`${this.sourceCode.split('\n')[this.currentLineIndex]}\``;
+  }
+
+  private advance() {
     this.index++;
     if (this.index >= this.sourceCode.length) {
       this.currentChar = null;
@@ -28,11 +32,11 @@ export class Tokenizer {
       this.currentChar = this.sourceCode[this.index];
     }
     if (this.currentChar === '\n') {
-      this.currentLine++;
+      this.currentLineIndex++;
     }
   }
 
-  peekNext(): string | null {
+  private peekNext(): string | null {
     if (this.index >= this.sourceCode.length) {
       return null;
     } else {
@@ -40,13 +44,13 @@ export class Tokenizer {
     }
   }
 
-  skipWhitespace() {
+  private skipWhitespace() {
     while (this.currentChar !== null && whitespace.includes(this.currentChar)) {
       this.advance();
     }
   }
 
-  parseNumber(): NumberToken {
+  private parseNumber(): NumberToken {
     let result: string = "";
     if (this.currentChar === '0' && this.peekNext() === 'x') {
       while (isHexadecimal(this.currentChar) || this.currentChar as string === 'x') {
@@ -78,7 +82,7 @@ export class Tokenizer {
     }
   }
 
-  skipComment() {
+  private skipComment() {
     if (this.currentChar !== '/') return;
     if (this.peekNext() === '/') {
       while (this.currentChar as string !== '\n') {
@@ -97,7 +101,7 @@ export class Tokenizer {
     }
   }
 
-  parseIdentifier(): Token {
+  private parseIdentifier(): Token {
     let result = "";
     if (!/^[a-zA-Z]$/.test(this.currentChar ?? "")) {
       throw new Error("Syntax error: identifiers have to start with a letter");
@@ -112,7 +116,7 @@ export class Tokenizer {
     };
   }
 
-  parseStringLiteral(): Token {
+  private parseStringLiteral(): Token {
     let result = "";
     if (this.currentChar !== '"') {
       throw new Error("Syntax error: string literal must start with a quote (\")");
@@ -132,7 +136,7 @@ export class Tokenizer {
     };
   }
 
-  parseCstringLiteral(): Token {
+  private parseCstringLiteral(): Token {
     if (this.currentChar !== 'c') {
       throw new Error("Syntax error: cstring literal must start with the prefix c");
     }
@@ -144,7 +148,7 @@ export class Tokenizer {
     };
   }
 
-  parsePunctuation(): Token {
+  private parsePunctuation(): Token {
     if (this.currentChar === ':') {
       if (this.peekNext() === '-') {
         this.advance();
@@ -184,15 +188,18 @@ export class Tokenizer {
     } else if (this.currentChar === TokenType.Comma) {
       this.advance();
       return { type: TokenType.Comma, value: "," };
+    } else if (this.currentChar === TokenType.QuestionMark) {
+      this.advance();
+      return { type: TokenType.QuestionMark, value: "?" };
     } else {
       throw new Error(
         `Syntax error: unexpected character '${this.currentChar}'\n`
-        + `on line ${this.currentLine+1}: ${this.sourceCode.split('\n')[this.currentLine]}`
+        + `on line ${this.currentLineIndex+1}: ${this.sourceCode.split('\n')[this.currentLineIndex]}`
       );
     }
   }
 
-  getNextToken(): Token {
+  private advanceToNextToken(): Token {
     while (this.currentChar !== null) {
       if (this.currentChar === TokenType.CstringSigil && this.peekNext() === '"') {
         return this.parseCstringLiteral();
@@ -211,7 +218,7 @@ export class Tokenizer {
       } else {
         throw new Error(
           `Syntax error: unexpected character '${this.currentChar ?? "EOF"}'\n`
-          + `on line ${this.currentLine+1}: \`${this.sourceCode.split('\n')[this.currentLine]}\``
+          + this.getCurrentLine()
         );
       }
     }
@@ -221,15 +228,20 @@ export class Tokenizer {
     };
   }
 
+  getNextToken(): Token {
+    const token = this.advanceToNextToken();
+    if (token.type === TokenType.Identifier && reservedWords.includes(token.value)) {
+      return { type: TokenType.ReservedWord, value: token.value };
+    } else {
+      return token;
+    }
+  }
+
   tokenize(): Token[] {
     let result = [];
     do {
       result.push(this.getNextToken());
     } while (result.at(-1)!.type !== TokenType.End);
-    return result.map(token =>
-      token.type === TokenType.Identifier && reservedWords.includes(token.value) ?
-        { type: TokenType.ReservedWord, value: token.value }
-        : token
-    );
+    return result;
   }
 };

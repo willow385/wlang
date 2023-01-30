@@ -2,7 +2,7 @@
 
 let printf: funct(fmt: ptr :- u8, varargs) => inative = extern;
 
-let main: funct(argc: mut inative, argv: mut ptr :- ptr :- u8) => inative = {
+let main: funct(argc: mut inative, argv: mut ptr :- ptr? :- u8) => inative = {
   printf(c"Hello, world!\n");
   result 0;
 };

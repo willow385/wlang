@@ -1,12 +1,10 @@
 import fs from "fs";
-import { Tokenizer } from "./Tokenizer";
+import { Parser } from "./Parser";
 
 function main(argv: string[]): void {
   const sourceCode = fs.readFileSync(argv[1], "ascii");
-  const tokenList = new Tokenizer(sourceCode).tokenize();
-  for (const token of tokenList) {
-    console.log(`value: ${token.value.toString()}\t\ttype: ${token.type}`);
-  }
+  const ast = new Parser(sourceCode).parseModule();
+  console.log(JSON.stringify(ast, null, 2));
 }
 
 main(process.argv.slice(1));

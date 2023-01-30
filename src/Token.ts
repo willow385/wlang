@@ -9,13 +9,13 @@ export enum TokenType {
   Minus = "-",
   Arrow = "=>",
   Equals = "=",
+  QuestionMark = "?",
   OpenBrace = "{", CloseBrace = "}",
   Comma = ",",
   CstringSigil = "c",
   CstringLiteral = "C String Literal",
   StringLiteral = "String Literal",
   Semicolon = ";",
-  CharLiteral = "Character Literal",
   WholeNumber = "Whole Number", Float = "Float",
   End = "End of File"
 };
@@ -38,7 +38,12 @@ export const reservedWords = [
 ];
 
 export const punctuation = [
-  "(", ")", ":-", ":", "-", "=>", "=", "{", "}", ",", ";"
+  "(", ")", ":-", ":", "-", "=>", "=", "?", "{", "}", ",", ";"
+];
+
+export const literalTypes = [
+  TokenType.CstringLiteral, TokenType.StringLiteral,
+  TokenType.WholeNumber, TokenType.Float
 ];
 
 export type ReservedWordToken = {
