@@ -11,12 +11,13 @@ export type PrimitiveType =
   | "i8"  | "u8"  | "i16" | "u16"
   | "i32" | "u32" | "i64" | "u64"
   | "float" | "double"
+  | "size" // size_t
   | Void
   | Pointer;
 
 export const primitiveTypes: PrimitiveType[] = [
   "inative", "unative", "i8", "u8", "i16", "u16", "i32", "u32", "i64", "u64", "float", "double",
-  "void", "ptr"
+  "size", "void", "ptr"
 ];
 
 export type Mut<T extends RuntimeType> = `mut ${T}`;

@@ -1,8 +1,8 @@
-// The goal for version 0.1.1 is to be able to compile this WLang program.
+// Compile with `npm run main wlang-code/hello.wlg`
 
-let printf: funct(fmt: ptr :- u8, varargs) => inative = extern;
+let printf: funct(fmt: mut ptr :- i8, varargs) => mut inative = extern;
 
-let main: funct(argc: mut inative, argv: mut ptr :- ptr? :- u8) => inative = {
+let main: funct(argc: mut inative, argv: mut ptr :- mut ptr? :- mut i8) => mut inative = {
   printf(c"Hello, world!\n");
   result 0;
 };

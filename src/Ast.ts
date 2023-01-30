@@ -73,57 +73,10 @@ export interface ResultStatement extends IAstNode, IStatement {
   body: Expression
 };
 
-export type Statement = IStatement | ResultStatement;
+export type Statement = { type: "Statement", body: Expression } | ResultStatement;
 
 export interface Module extends IAstNode {
   type: "Module",
   functions: FunctionDeclaration[]
 };
 
-// example AST for a hello world program
-const helloWorld: Module = {
-  type: "Module",
-  functions: [
-    {
-      type: "FunctionDeclaration",
-      identifier: "printf",
-      signature: "funct(ptr :- u8, varargs) => inative",
-      parameters: [{"fmt": "ptr :- u8"}, "varargs"],
-      returnType: "inative",
-      body: { type: "Extern", value: "extern" }
-    },
-    {
-      type: "FunctionDeclaration",
-      identifier: "main",
-      signature: "funct(mut inative, mut ptr :- ptr :- u8) => inative",
-      parameters: [{"argc": "mut inative"}, {"argv": "mut ptr :- ptr :- u8"}],
-      returnType: "inative",
-      body: {
-        type: "Block",
-        value: [
-          {
-            type: "Statement",
-            body: {
-              type: "FunctionCall",
-              value: "printf()",
-              identifier: "printf",
-              arguments: [
-                {
-                  type: "StringLiteral",
-                  value: "Hello, world!\\n"
-                }
-              ]
-            }
-          },
-          {
-            type: "ResultStatement",
-            body: {
-              type: "IntLiteral",
-              value: "0"
-            }
-          }
-        ]
-      }
-    }
-  ]
-};

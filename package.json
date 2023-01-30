@@ -1,19 +1,19 @@
 {
   "name": "wlang",
-  "version": "0.1.0",
-  "description": "wlang compiler",
+  "version": "0.1.1",
+  "description": "Wlang compiler",
   "main": "main.js",
   "scripts": {
     "test": "npx ts-node src/main.ts",
     "build": "tsc",
-    "main": "tsc && node dist/main.js"
+    "main": "node dist/main.js"
   },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/DanteFalzone0/wlang.git"
   },
-  "author": "",
-  "license": "ISC",
+  "author": "https://github.com/DanteFalzone0",
+  "license": "BSD-2-Clause",
   "bugs": {
     "url": "https://github.com/DanteFalzone0/wlang/issues"
   },
