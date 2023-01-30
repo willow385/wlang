@@ -4,14 +4,14 @@
     {
       "type": "FunctionDeclaration",
       "identifier": "printf",
-      "signature": "funct(ptr :- u8, varargs) => inative",
+      "signature": "funct(mut ptr :- i8, varargs) => mut inative",
       "parameters": [
         {
-          "fmt": "ptr :- u8"
+          "fmt": "mut ptr :- i8"
         },
         "varargs"
       ],
-      "returnType": "inative",
+      "returnType": "mut inative",
       "body": {
         "type": "Extern",
         "value": "extern"
@@ -20,16 +20,16 @@
     {
       "type": "FunctionDeclaration",
       "identifier": "main",
-      "signature": "funct(mut inative, mut ptr :- ptr? :- u8) => inative",
+      "signature": "funct(mut inative, mut ptr :- mut ptr? :- mut i8) => mut inative",
       "parameters": [
         {
           "argc": "mut inative"
         },
         {
-          "argv": "mut ptr :- ptr? :- u8"
+          "argv": "mut ptr :- mut ptr? :- mut i8"
         }
       ],
-      "returnType": "inative",
+      "returnType": "mut inative",
       "body": {
         "type": "Block",
         "value": [
