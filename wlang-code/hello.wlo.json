@@ -42,7 +42,7 @@
               "arguments": [
                 {
                   "type": "CstringLiteral",
-                  "value": ")"
+                  "value": "Hello, world!\\n"
                 }
               ]
             }
@@ -51,7 +51,7 @@
             "type": "ResultStatement",
             "body": {
               "type": "IntLiteral",
-              "value": ";"
+              "value": "0"
             }
           }
         ]

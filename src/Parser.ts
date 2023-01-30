@@ -191,32 +191,37 @@ export class Parser {
   }
 
   parseExpression(): Expression {
+    let result = null;
     if (literalTypes.includes(this.currentToken.type)) {
       switch (this.currentToken.type) {
         case TokenType.WholeNumber:
-          this.consumeToken(TokenType.WholeNumber);
-          return {
+          result = {
             type: "IntLiteral",
             value: this.currentToken.value.toString()
           } as IntLiteral;
+          this.consumeToken(TokenType.WholeNumber);
+          return result;
         case TokenType.Float:
-          this.consumeToken(TokenType.Float);
-          return {
+          result = {
             type: "FloatLiteral",
             value: this.currentToken.value
           } as FloatLiteral;
+          this.consumeToken(TokenType.Float);
+          return result;
         case TokenType.CstringLiteral:
-          this.consumeToken(TokenType.CstringLiteral);
-          return {
+          result = {
             type: "CstringLiteral",
             value: this.currentToken.value
           } as CstringLiteral;
+          this.consumeToken(TokenType.CstringLiteral);
+          return result;
         case TokenType.StringLiteral:
-          this.consumeToken(TokenType.StringLiteral);
-          return {
+          result = {
             type: "StringLiteral",
             value: this.currentToken.value
           } as StringLiteral;
+          this.consumeToken(TokenType.StringLiteral);
+          return result;
         default:
           throw new Error(
             "Something must be wrong with either the Typescript compiler or your Javascript engine, "
