@@ -28,7 +28,7 @@ running the compiler with `npm run main -- <file>.wlg --output-wlo` and piping t
 to a file. Don't forget the `--` after `npm run main` or npm will eat the flag.
 
 
-My reasoning for why you'd want to use Wlang object files from binary object files is that Wlang
+My reasoning for why you'd want to use Wlang object files versus binary object files is that Wlang
 has more type information that the compiler can reason about than C does, for example it
 already distinguishes between nullable and non-nullable pointers, which C does not. It will
 of course always be possible to compile Wlang into a regular binary object file, and then
