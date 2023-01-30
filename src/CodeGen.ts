@@ -125,10 +125,10 @@ function getPointerType(type: PointerType<ValueType> | NullablePointerType<Value
       const [_, t] = typePointedTo.split(" ") as ["mut", PrimitiveType];
       result += wlangToCDictionary[t];
     } else {
-      result += `const ${wlangToCDictionary[typePointedTo as PrimitiveType]} `;
+      result += `const ${wlangToCDictionary[typePointedTo as PrimitiveType]}`;
     }
     if (isMut(pointer)) {
-      result += "* ";
+      result += "*";
     } else {
       result += "*const "
     }
@@ -140,7 +140,7 @@ function getPointerType(type: PointerType<ValueType> | NullablePointerType<Value
         + `\`${componentTypes[1]} :- ${componentTypes[2]}\` is not a valid type.`
       );
     }
-    const pointer = isMut(componentTypes[0]) ? "* " : "*const ";
+    const pointer = isMut(componentTypes[0]) ? "*" : "*const ";
     return getPointerType(componentTypes.slice(1).join(" :- ") as PointerType<ValueType>) + pointer;
   }
 }
