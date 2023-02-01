@@ -1,7 +1,7 @@
 import fs from "fs";
+import { Parser } from "./Parser";
 import { Module } from "./Ast";
 import { compile } from "./CodeGen";
-import { Parser } from "./Parser";
 
 function main(argv: string[]): void {
   if (argv[1].endsWith(".wlg")) {

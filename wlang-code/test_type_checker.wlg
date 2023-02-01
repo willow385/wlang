@@ -1,0 +1,63 @@
+/* This code is written to test the type checker.  *
+ * It is supposed to violate as many rules of the  *
+ * Wlang type system as possible while still being *
+ * syntactically valid. If the type checker works, *
+ * tests 1 through 9 should fail type checking and *
+ * print a helpful error message to stderr.        */
+
+// This should pass; extern functions can't be type checked.
+let test0: funct() => mut ptr? :- mut inative = extern;
+
+// This violates nullability constraints.
+let test1: funct() => ptr :- inative = {
+  result test0();
+};
+
+// This violates mutability constraints.
+let test2: funct() => ptr :- mut inative = {
+  result test1();
+};
+
+// This violates pointer constraints.
+let test3: funct() => ptr :- float = {
+  result test2();
+};
+
+let extern_function: funct() => ptr :- ptr :- u8 = extern;
+
+// This violates pointer indirection level constraints.
+let test4: funct() => ptr :- ptr :- ptr :- u8 = {
+  result extern_function();
+};
+
+let printf: funct(fmt: mut ptr :- i8, varargs) => inative = extern;
+
+// This non-void function is missing a result statement.
+let test5: funct() => u8 = {
+  printf(c"Hello!\n");
+};
+
+// This void function has a result statement but it shouldn't.
+let test6: funct() => void = {
+  result 0xDEADBEEF;
+};
+
+// This function's return type is incompatible with a float literal.
+let test7: funct() => i32 = {
+  result 3.14159;
+};
+
+// This function's return type is incompatible with an integer literal.
+let test8: funct() => double = {
+  result 42;
+};
+
+// This function calls a function that hasn't been declared.
+let test9: funct() => i32 = {
+  result nonexistent_function();
+};
+
+// This shouldn't count as an error. Recursive functions shouldn't break the compiler.
+let test10: funct() => ptr? :- mut i8 = {
+  result test10();
+};

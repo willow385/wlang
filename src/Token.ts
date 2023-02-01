@@ -17,6 +17,7 @@ export enum TokenType {
   StringLiteral = "String Literal",
   Semicolon = ";",
   WholeNumber = "Whole Number", Float = "Float",
+  Ampersand = "&",
   End = "End of File"
 };
 
@@ -38,7 +39,7 @@ export const reservedWords = [
 ];
 
 export const punctuation = [
-  "(", ")", ":-", ":", "-", "=>", "=", "?", "{", "}", ",", ";"
+  "(", ")", ":-", ":", "-", "=>", "=", "?", "{", "}", ",", ";", "&"
 ];
 
 export const literalTypes = [

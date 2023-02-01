@@ -6,19 +6,24 @@ export type Void = "void";
  * Reading an instance of Nothing is undefined behavior. */
 export type Nothing = "Nothing";
 
-export type PrimitiveType =
+export type IntegralType =
   | "inative" | "unative" // `int` and `unsigned int` in C
   | "i8"  | "u8"  | "i16" | "u16"
   | "i32" | "u32" | "i64" | "u64"
-  | "float" | "double"
   | "size" // size_t
-  | Void
   | Pointer;
 
-export const primitiveTypes: PrimitiveType[] = [
-  "inative", "unative", "i8", "u8", "i16", "u16", "i32", "u32", "i64", "u64", "float", "double",
-  "size", "void", "ptr"
+export type ArithmeticType = IntegralType | "double" | "float";
+
+export type PrimitiveType = ArithmeticType | Void;
+
+export const integralTypes: IntegralType[] = [
+  "inative", "unative", "i8", "u8", "i16", "u16", "i32", "u32", "i64", "u64", "size", "ptr"
 ];
+
+export const arithmeticTypes: ArithmeticType[] = [...integralTypes, "double", "float"];
+
+export const primitiveTypes: PrimitiveType[] = [...arithmeticTypes, "void"];
 
 export type Mut<T extends RuntimeType> = `mut ${T}`;
 
