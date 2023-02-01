@@ -56,7 +56,6 @@ implicit casting:
 
 0. A non-pointer `T` cannot be cast to any non-`T` type. (This will be revised in later versions.)
 1. A `mut T` can be cast to `T`, but a `T` cannot be cast to `mut T`.
-   With one exception: a `mut T` value can be resulted from a function returning `T`.
 2. A `ptr :- T` can be cast to a `ptr? :- T`, but a `ptr? :- T` cannot be cast to a `ptr :- T`.
    In other words, a non-nullable pointer can be cast to a nullable pointer, but not the other way around.
 3. `ptr :- void` breaks rule 0, but not rules 1 and 2.
