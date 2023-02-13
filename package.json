@@ -1,6 +1,6 @@
 {
   "name": "wlang",
-  "version": "0.1.3",
+  "version": "0.1.4-wip.1",
   "description": "Wlang compiler",
   "main": "main.js",
   "scripts": {
