@@ -8,7 +8,7 @@ function main(argv: string[]): void {
   if (argv.includes("--version")) {
     console.log(
       `Wlang compiler ${wlangCompilerVersion}, release date 12 Feb 2023\n`
-      + "Copyright (C) 2023 Willow Falzone.\n"
+      + "Copyright (C) 2023 Dante Falzone. (That's my legal name.)\n"
       + "All rights reserved under the BSD 2-clause license.\n"
       + "For more info see the LICENSE in this project's root directory."
     );

@@ -1,20 +1,20 @@
 {
+  "compilerVersion": "v0.1.4-wip.1",
   "type": "Module",
   "functions": [
     {
       "type": "FunctionDeclaration",
-      "identifier": "printf",
-      "signature": "funct(mut ptr :- i8, varargs) => mut inative",
+      "identifier": "print_message",
+      "signature": "funct(ptr :- i8) => void",
       "parameters": [
         {
-          "fmt": "mut ptr :- i8"
-        },
-        "varargs"
+          "message": "ptr :- i8"
+        }
       ],
-      "returnType": "mut inative",
+      "returnType": "void",
       "body": {
-        "type": "Extern",
-        "value": "extern"
+        "type": "InlineC",
+        "value": "\n  #include <stdio.h>\n  void print_message(const char *const message) {\n    printf(\"%s\\n\", message);\n  }\n"
       }
     },
     {
@@ -37,12 +37,12 @@
             "type": "Statement",
             "body": {
               "type": "FunctionCall",
-              "value": "printf()",
-              "identifier": "printf",
+              "value": "print_message()",
+              "identifier": "print_message",
               "arguments": [
                 {
                   "type": "CstringLiteral",
-                  "value": "Hello, world!\\n"
+                  "value": "Hello, world!"
                 }
               ]
             }

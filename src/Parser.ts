@@ -6,6 +6,7 @@ import {
   FloatLiteral,
   FunctionCall,
   FunctionDeclaration,
+  InlineC,
   IntLiteral,
   Module,
   ParamDeclaration,
@@ -13,6 +14,7 @@ import {
   Statement,
   StringLiteral
 } from "./Ast";
+import { wlangCompilerVersion } from "./GlobalConstants";
 import { literalTypes, Token, TokenType } from "./Token";
 import { Tokenizer } from "./Tokenizer";
 import {
@@ -62,6 +64,7 @@ export class Parser {
       functionDeclarations.push(this.parseFunctionDeclaration());
     }
     return {
+      compilerVersion: wlangCompilerVersion,
       type: "Module",
       functions: functionDeclarations
     };
@@ -105,12 +108,31 @@ export class Parser {
     // Now the function's return type.
     const returnType = this.parseValueType();
     this.consumeToken(TokenType.Equals);
-    let body: Block | Extern | null = null;
-    // Then the function's body, or if it doesn't have one, "extern".
+    let body: Block | Extern | InlineC | null = null;
+    // Then the function's body, or if it doesn't have one, "extern" or "inline".
     // A function with "extern" instead of a body is supposed to be defined in a linked object file.
+    // A function with an "inline" body has C source code between a `#{` and a `#}`.
     if (this.currentToken.type as TokenType === TokenType.ReservedWord) {
-      this.consumeToken(TokenType.ReservedWord, "extern");
-      body = { type: "Extern", value: "extern" };
+      if (this.currentToken.value === "extern") {
+        this.consumeToken(TokenType.ReservedWord, "extern");
+        body = { type: "Extern", value: "extern" };
+      } else {
+        // We must be about to parse an inline C block.
+        this.consumeToken(TokenType.ReservedWord, "inline");
+        const inlineCBlock = this.currentToken;
+        this.consumeToken(TokenType.InlineCBlock, inlineCBlock.value);
+        if (inlineCBlock.type !== TokenType.InlineCBlock) {
+          throw new Error(
+            `Syntax error: expected inline C block but got \`${inlineCBlock.value}\` instead\n`
+            + this.tokenizer.getCurrentLine()
+          );
+        } else {
+          body = {
+            type: "InlineC",
+            value: inlineCBlock.value
+          };
+        }
+      }
     } else {
       body = this.parseBlock();
     }

@@ -18,6 +18,9 @@ export enum TokenType {
   Semicolon = ";",
   WholeNumber = "Whole Number", Float = "Float",
   Ampersand = "&",
+  Octothorpe = "#",
+  OpenInlineBrace = "#{", CloseInlineBrace = "}#", // for inline C blocks
+  InlineCBlock = "Inline C source code",
   End = "End of File"
 };
 
@@ -30,16 +33,17 @@ export type ReservedWord =
   | "result"
   | "Typename"
   | "varargs"
+  | "inline"
   | PrimitiveType
   | Nothing;
 
 export const reservedWords = [
-  "let", "mut", "funct", "macro", "extern", "result", "Typename", "varargs",
+  "let", "mut", "funct", "macro", "extern", "result", "Typename", "varargs", "inline",
   ...primitiveTypes, "Nothing"
 ];
 
 export const punctuation = [
-  "(", ")", ":-", ":", "-", "=>", "=", "?", "{", "}", ",", ";", "&"
+  "(", ")", ":-", ":", "-", "=>", "=", "?", "{", "}", ",", ";", "&", "#{", "}#"
 ];
 
 export const literalTypes = [

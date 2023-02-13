@@ -199,9 +199,35 @@ export class Tokenizer {
     }
   }
 
+  private parseInlineCBlock(): Token {
+    // We're right at the first character of a `#{` if we get here, so we advance twice to skip it.
+    this.advance();
+    this.advance();
+    let result = "";
+    while (!(this.currentChar === "}" && this.peekNext() === "#")) {
+      if (this.currentChar === null) {
+        throw new Error(
+          "Syntax error: unexpected end of file in inline C block\n"
+          + this.getCurrentLine()
+        );
+      }
+      result += this.currentChar;
+      this.advance();
+    }
+    // Skip past the `}#` at the end.
+    this.advance();
+    this.advance();
+    return {
+      type: TokenType.InlineCBlock,
+      value: result
+    };
+  }
+
   private advanceToNextToken(): Token {
     while (this.currentChar !== null) {
-      if (this.currentChar === TokenType.CstringSigil && this.peekNext() === '"') {
+      if (this.currentChar === TokenType.Octothorpe && this.peekNext() === '{') {
+        return this.parseInlineCBlock();
+      } else if (this.currentChar === TokenType.CstringSigil && this.peekNext() === '"') {
         return this.parseCstringLiteral();
       } else if (/^[a-zA-Z]$/.test(this.currentChar)) {
         return this.parseIdentifier();

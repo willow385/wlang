@@ -1,1 +1,1 @@
-export const wlangCompilerVersion = "v0.1.3";
+export const wlangCompilerVersion = "v0.1.4-wip.1";

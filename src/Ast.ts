@@ -11,12 +11,19 @@ interface IExpression extends IAstNode {
 
 type ExpressionType =
   "Extern"
+  | "InlineC"
   | "IntLiteral"
   | "FloatLiteral"
   | "StringLiteral"
   | "CstringLiteral"
   | "Block"
   | "FunctionCall";
+
+export interface InlineC extends IAstNode, IExpression {
+  type: "InlineC",
+  /** inline C source code */
+  value: string
+};
 
 export interface Extern extends IAstNode, IExpression {
   type: "Extern",
@@ -60,7 +67,7 @@ export interface FunctionDeclaration extends IAstNode, IStatement {
   signature: FunctionType<any, any>,
   parameters: ParamDeclaration[],
   returnType: ValueType,
-  body: Block | Extern
+  body: Block | Extern | InlineC
 };
 
 export interface FunctionCall extends IAstNode, IExpression {
@@ -86,6 +93,7 @@ export interface ResultStatement extends IAstNode, IStatement {
 export type Statement = { type: "Statement", body: Expression } | ResultStatement;
 
 export interface Module extends IAstNode {
+  compilerVersion: string,
   type: "Module",
   functions: FunctionDeclaration[]
 };

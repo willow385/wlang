@@ -35,7 +35,7 @@ function compileFunction(functionDec: FunctionDeclaration) {
     }
   });
   let body = null;
-  if (functionDec.body.type !== "Extern") {
+  if (functionDec.body.type !== "Extern" && functionDec.body.type !== "InlineC") {
     body = ` ${compileBlock(functionDec.body)}`;
   }
   if (parameters.includes("...") && parameters.slice(0, -1).includes("...")) {
@@ -45,6 +45,9 @@ function compileFunction(functionDec: FunctionDeclaration) {
   }
   const signature =
     `${returnType} ${functionDec.identifier}(${parameters.join(", ")})`;
+  if (functionDec.body.type === "InlineC") {
+    return `${signature};\n${functionDec.body.value}`;
+  }
   return `${signature}${body ?? ';\n'}`;
 }
 

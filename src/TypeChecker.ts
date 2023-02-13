@@ -295,8 +295,8 @@ function isFunctionDeclarationTypeSound(
   module: Module,
   lookupTable: FunctionTypeLookupTable
 ): boolean {
-  if (functionDec.body.type === "Extern") {
-    // Assume all extern functions are type sound.
+  if (functionDec.body.type === "Extern" || functionDec.body.type === "InlineC") {
+    // Assume all extern and inline functions are type sound.
     return true;
   }
   let result = true;
