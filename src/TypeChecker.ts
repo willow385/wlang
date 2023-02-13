@@ -48,9 +48,10 @@ function asNonMut(type: ValueType): ValueType {
   }
 }
 
-/* This function enforces type compatibility according to rules described in the
- * last paragraph of the readme. Future version of Wlang will have more sophisticated
- * type constraints, including interfaces, ownership, and explicit casting. */
+/* This function enforces type compatibility according to rules described in this
+ * section of the readme: https://github.com/DanteFalzone0/wlang#v012. Future versions
+ * of Wlang will have more sophisticated type constraints, including interfaces, ownership,
+ * and explicit casting. */
 function canImplicitlyCast(type: ValueType, otherType: ValueType): boolean {
   if (type === otherType) {
     // Identity property.
