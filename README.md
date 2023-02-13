@@ -86,3 +86,14 @@ won't compile your program.
 This version is not complete. When finished, it will implement variable declaration, variable
 assignment, and inline C (by which I mean literally embedding C source code in Wlang source code,
 like inline assembly).
+#### v0.1.4-wip.1
+This version implements inline C blocks, allowing you to do this:
+```
+let foo: funct() => void = inline #{
+  // Put some C source code here. Should include a definition for `void foo()`.
+  void foo() {
+    // Implement `foo` in C here!
+  }
+}#;
+```
+Note that the Wlang compiler will not attempt to verify the validity of the C code at all.
