@@ -2,7 +2,7 @@
  * It is supposed to violate as many rules of the  *
  * Wlang type system as possible while still being *
  * syntactically valid. If the type checker works, *
- * tests 1 through 9 should fail type checking and *
+ * tests 1 through 13 should fail type checking and *
  * print a helpful error message to stderr.        */
 
 // This should pass; extern functions can't be type checked.
@@ -57,7 +57,34 @@ let test9: funct() => i32 = {
   result nonexistent_function();
 };
 
+// This function calls printf with a float, which is incompatible with `mut ptr :- i8`.
+let test10: funct() => void = {
+  printf(3.14159);
+};
+
+let funct_with_args: funct(a: ptr :- i8, b: float) => void = extern;
+
+// This function doesn't pass enough arguments to funct_with_args.
+let test11: funct() => void = {
+  funct_with_args(c"hello");
+};
+
+// This function passes too many arguments to funct_with_args.
+let test12: funct() => void = {
+  funct_with_args(c"yipee", 1.6, 0xF00);
+};
+
+// This function passes the right number of args to funct_with_args, but with the wrong types.
+let test13: funct() => void = {
+  funct_with_args(6.942, c"whoopsie");
+};
+
+// This shouldn't count as an error. This call to funct_with_args has the right arity and types.
+let non_error_case: funct() => void = {
+  funct_with_args(c"hooray", 2.718);
+};
+
 // This shouldn't count as an error. Recursive functions shouldn't break the compiler.
-let test10: funct() => ptr? :- mut i8 = {
-  result test10();
+let recursive: funct() => ptr? :- mut i8 = {
+  result recursive();
 };

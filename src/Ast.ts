@@ -5,8 +5,18 @@ interface IAstNode {
 };
 
 interface IExpression extends IAstNode {
+  type: ExpressionType,
   value: any
 };
+
+type ExpressionType =
+  "Extern"
+  | "IntLiteral"
+  | "FloatLiteral"
+  | "StringLiteral"
+  | "CstringLiteral"
+  | "Block"
+  | "FunctionCall";
 
 export interface Extern extends IAstNode, IExpression {
   type: "Extern",

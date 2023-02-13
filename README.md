@@ -46,7 +46,8 @@ object file and linking against it per usual is absolutely the right way to go. 
 only going to call Wlang functions from Wlang, it'd be easier to use Wlang object files,
 and forgo machine code generation altogether until it comes time to make the actual executable.
 
-
+## Changes by version
+### v0.1.2
 Version 0.1.2 adds very basic type checking to the language. Before it compiles your program,
 it will check to make sure that all functions return values compatible with their return types,
 and if it finds any functions for which that isn't the case, it will refuse to compile your
@@ -54,12 +55,34 @@ program and print a helpful error message to stderr. The type checker is more so
 just comparing types according to string equality; it enforces the following rules concerning
 implicit casting:
 
-0. A non-pointer `T` cannot be cast to any non-`T` type. (This will be revised in later versions.)
+0. A type `T` cannot be cast to any non-`T` type. (This will be revised in later versions.)
 1. A `mut T` can be cast to `T`, but a `T` cannot be cast to `mut T`.
 2. A `ptr :- T` can be cast to a `ptr? :- T`, but a `ptr? :- T` cannot be cast to a `ptr :- T`.
    In other words, a non-nullable pointer can be cast to a nullable pointer, but not the other way around.
 3. `ptr :- void` breaks rule 0, but not rules 1 and 2.
 4. `ptr :- void` is the only pointer type that can be cast as a different pointer type.
 
-However, v0.1.2 does not check function calls for arity and type compatibility, which is planned
-for v0.1.3.
+### v0.1.3
+Version 0.1.3 adds slightly more advanced type checking: in addition to the above, it will check
+to make sure that all function calls in your program agree with their declarations in arity and
+type. So if you declare a function like this:
+```
+let printf: funct(fmt: mut ptr :- i8, varargs) => mut inative = extern;
+```
+then these calls are valid:
+```
+printf(c"Hello, world!\n");
+printf(c"The magic number is %d\n", 69);
+```
+but not this one:
+```
+// Expression `3.14` cannot be implicitly cast to expected type `mut ptr :- i8`
+printf(3.14);
+```
+If the type checker finds that a call is invalid, it will print an error message to stderr and
+won't compile your program.
+
+### v0.1.4
+This version is not complete. When finished, it will implement variable declaration, variable
+assignment, and inline C (by which I mean literally embedding C source code in Wlang source code,
+like inline assembly).

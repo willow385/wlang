@@ -46,6 +46,9 @@ export class Parser {
       }
       this.currentToken = this.tokenizer.getNextToken();
     } else {
+      if (tokenType === ';') {
+        console.error("Syntax Error: note: check if there's a missing semicolon on a previous line");
+      }
       throw new Error(
         `Syntax Error: Expected \`${tokenType}\`, got \`${this.currentToken.type}\`\n`
         + this.tokenizer.getCurrentLine()

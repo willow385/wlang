@@ -1,4 +1,5 @@
-import { Block, FunctionCall, FunctionDeclaration, Module, ResultStatement } from "./Ast";
+import { Block, Expression, FunctionCall, FunctionDeclaration, Module, ResultStatement } from "./Ast";
+import { wlangCompilerVersion } from "./GlobalConstants";
 import { integralTypes, Mut, NullablePointerType, PointerType, ValueType } from "./Types";
 
 export function isPointer(type: ValueType): boolean {
@@ -132,9 +133,137 @@ function generateLookupTable(functions: FunctionDeclaration[]): FunctionTypeLook
   return result;
 }
 
+function isFunctionCallValid(
+  functionCall: FunctionCall,
+  module: Module,
+  lookupTable: FunctionTypeLookupTable
+): boolean {
+  const functionDec = module.functions.find(f => f.identifier === functionCall.identifier);
+  if (functionDec === undefined) {
+    console.error(`No function named \`${functionCall.identifier}\` could be found in scope.`);
+    return false;
+  }
+  const arity = functionDec.parameters.length;
+  const argumentCount = functionCall.arguments.length;
+  if (arity === 0 && argumentCount === 0) {
+    return true;
+  }
+  const hasVarargs = functionDec.parameters.includes("varargs");
+  if (hasVarargs && argumentCount < (arity - 1)) {
+    console.error(
+      `Call to variadic function \`${functionDec.identifier}\` with signature `
+      + `\`${functionDec.signature}\` must have at least ${(arity - 1)} arguments, `
+      + `but only ${argumentCount} arguments were passed.`
+    );
+    return false;
+  } else if (!hasVarargs && argumentCount !== arity) {
+    const adverb = argumentCount < arity ? "only" : "as many as";
+    console.error(
+      `Call to function \`${functionDec.identifier}\` must have exactly ${arity} arguments, `
+      + `but ${adverb} ${argumentCount} arguments were passed.`
+    );
+    return false;
+  } else {
+    let areArgumentsValid = true;
+    for (let i = 0; i < arity && functionDec.parameters[i] !== "varargs"; i++) {
+      const isArgumentValid = canImplicitlyCastExpression(
+        functionCall.arguments[i],
+        Object.values(functionDec.parameters[i])[0] as ValueType,
+        module,
+        lookupTable
+      );
+      if (!isArgumentValid) {
+        areArgumentsValid = false;
+        const invalidExpression =
+          functionCall.arguments[i].type === "StringLiteral" ?
+            `"${functionCall.arguments[i].value}"`
+          : functionCall.arguments[i].type === "CstringLiteral" ?
+            `c"${functionCall.arguments[i].value}"`
+          : `${functionCall.arguments[i].value}`;
+        console.error(
+          `Expression \`${invalidExpression}\` cannot be implicitly cast `
+          + `to expected type \`${Object.values(functionDec.parameters[i])[0]}\`.`
+        );
+      }
+    }
+    return areArgumentsValid;
+  }
+}
+
+// This function checks whether `expression` can be implicitly cast to type `targetCastType`.
+function canImplicitlyCastExpression(
+  expression: Expression,
+  targetCastType: ValueType,
+  module: Module,
+  lookupTable: FunctionTypeLookupTable
+): boolean {
+  if (targetCastType === "void") {
+    console.error("Cannot cast a value to void.");
+    return false;
+  }
+
+  switch (expression.type) {
+    case "FunctionCall": {
+      const functionCall = expression as FunctionCall;
+      if (!(functionCall.identifier in lookupTable)) {
+        console.error(
+          `Function \`${functionCall.identifier}\` was called but could not be found in scope. `
+          + "Did you forget to declare it?"
+        );
+        return false;
+      }
+      const functionCallReturnType = lookupTable[functionCall.identifier];
+      if (canImplicitlyCast(functionCallReturnType, asNonMut(targetCastType))) {
+        const result = isFunctionCallValid(functionCall, module, lookupTable);
+        if (!result) {
+          console.error(
+            `Invalid arguments were passed to the function \`${functionCall.identifier}\`.`
+          );
+        }
+        return result;
+      } else {
+        console.error(
+          `Type error: function \`${functionCall.identifier}\` returns \`${functionCallReturnType}\`, `
+          + `which cannot be implicitly cast to \`${targetCastType}\`.`
+        );
+        return false;
+      }
+    }
+    case "IntLiteral": {
+      const result = integralTypes.includes(asNonMut(targetCastType) as any);
+      if (!result) {
+        console.error(`Cannot implicitly cast integer literal to \`${targetCastType}\`.`);
+      }
+      return result;
+    }
+    case "FloatLiteral": {
+      const result = ["float", "double"].includes(asNonMut(targetCastType));
+      if (!result) {
+        console.error(`Cannot implicitly cast float literal to \`${targetCastType}\`.`);
+      }
+      return result;
+    }
+    case "CstringLiteral": {
+      const result = canImplicitlyCast("mut ptr :- i8", targetCastType);
+      if (!result) {
+        console.error(
+          `Cannot implicitly cast cstring literal, which has type \`mut ptr :- i8\`, to ${targetCastType}.`
+        );
+      }
+      return result;
+    }
+    default:
+      console.error(
+        `Expressions of type ${expression.type} are not supported in Wlang ${wlangCompilerVersion}.`
+      );
+      return false;
+  }
+}
+
 function isBlockResultTypeCompatible(
   block: Block,
   returnType: ValueType,
+  module: Module,
   lookupTable: FunctionTypeLookupTable
 ): boolean {
   if (block.value.length === 0 || block.value.at(-1)?.type !== "ResultStatement") {
@@ -144,58 +273,54 @@ function isBlockResultTypeCompatible(
     }
     return result;
   } else {
-    if (returnType === "void") {
-      console.error("Cannot result a value from a void function.");
-      return false;
-    }
     const resultStatement = block.value.at(-1) as ResultStatement;
-    if (resultStatement.body.type === "FunctionCall") {
-      const functionCall = resultStatement.body as FunctionCall;
-      if (!(functionCall.identifier in lookupTable)) {
-        console.error(
-          `Function \`${functionCall.identifier}\` was called but could not be found in scope. `
-          + "Did you forget to declare it?"
-        );
-        return false;
-      }
-      const functionCallReturnType = lookupTable[functionCall.identifier];
-      if (canImplicitlyCast(functionCallReturnType, asNonMut(returnType))) {
-        return true;
-      } else {
-        console.error(
-          `Type error: function \`${functionCall.identifier}\` returns \`${functionCallReturnType}\`, `
-          + `which cannot be implicitly cast to \`${returnType}\`.`
-        );
-        return false;
-      }
-    } else if (resultStatement.body.type === "IntLiteral") {
-      const result = integralTypes.includes(asNonMut(returnType) as any);
-      if (!result) {
-        console.error(`Cannot result integer literal from function returning \`${returnType}\`.`)
-      }
-      return result;
-    } else if (resultStatement.body.type === "FloatLiteral") {
-      const result = ["float", "double"].includes(asNonMut(returnType));
-      if (!result) {
-        console.error(`Cannot result float literal from function returning \`${returnType}\`.`)
-      }
-      return result;
-    } else {
-      console.error(
-        "Version 0.1.2 of Wlang doesn't support returning expressions "
-        + `of type \`${resultStatement.body.type}\`.`
-      );
+    if (resultStatement.body.type === "CstringLiteral") {
+      console.error("cstring literals cannot be directly returned from functions.");
       return false;
+    } else {
+      const result = canImplicitlyCastExpression(resultStatement.body, returnType, module, lookupTable);
+      if (!result) {
+        console.error(
+          "Cannot result an expression from a function that can't be implicitly cast to that "
+          + "function's return type."
+        );
+      }
+      return result;
     }
   }
 }
 
-export function isTypeSound(ast: Module): boolean {
-  const lookupTable: FunctionTypeLookupTable = generateLookupTable(ast.functions);
+function isFunctionDeclarationTypeSound(
+  functionDec: FunctionDeclaration,
+  module: Module,
+  lookupTable: FunctionTypeLookupTable
+): boolean {
+  if (functionDec.body.type === "Extern") {
+    // Assume all extern functions are type sound.
+    return true;
+  }
   let result = true;
-  for (const functionDec of ast.functions) {
+  if (!isBlockResultTypeCompatible(functionDec.body, functionDec.returnType, module, lookupTable)) {
+    result = false;
+  }
+  /* If the function contains any function calls, we have to check that they're valid. */
+  for (const statement of functionDec.body.value) {
+    if (statement.body.type === "FunctionCall") {
+      const functionCall = statement.body as FunctionCall;
+      if (!isFunctionCallValid(functionCall, module, lookupTable)) {
+        result = false;
+      }
+    }
+  }
+  return result;
+}
+
+export function isModuleTypeSound(module: Module): boolean {
+  const lookupTable: FunctionTypeLookupTable = generateLookupTable(module.functions);
+  let result = true;
+  for (const functionDec of module.functions) {
     if (functionDec.body.type !== "Extern") {
-      if (!isBlockResultTypeCompatible(functionDec.body, functionDec.returnType, lookupTable)) {
+      if (!isFunctionDeclarationTypeSound(functionDec, module, lookupTable)) {
         console.error(`^ Type error in function \`${functionDec.identifier}\` described above.\n`);
         result = false;
       }
